@@ -15,7 +15,7 @@ export async function DELETE(
 
     try {
         await db.execute({
-            sql: 'DELETE FROM email_templates WHERE id = ? AND user_id = ?',
+            sql: 'DELETE FROM templates WHERE id = ? AND user_id = ?',
             args: [id, userId]
         });
         return NextResponse.json({ success: true });

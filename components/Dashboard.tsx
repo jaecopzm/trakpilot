@@ -1026,14 +1026,14 @@ export default function Dashboard() {
                 </Dialog>
                 {/* Compose Dialog */}
                 <Dialog open={showCompose} onOpenChange={setShowCompose}>
-                    <DialogContent className="sm:max-w-lg">
+                    <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
                         <DialogHeader>
                             <DialogTitle>Compose Email</DialogTitle>
                             <DialogDescription>
                                 Send a tracked email directly from here.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4 py-4">
+                        <div className="space-y-4 py-4 overflow-y-auto flex-1">
                             <div className="flex items-end gap-3">
                                 <div className="flex-1 space-y-2">
                                     <Label htmlFor="template-select">Apply Template</Label>
@@ -1131,7 +1131,7 @@ export default function Dashboard() {
                                     </div>
                                     <textarea
                                         id="compose-body"
-                                        className="flex min-h-[150px] w-full bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-y border-none"
+                                        className="flex min-h-[120px] max-h-[200px] w-full bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 resize-y border-none"
                                         placeholder="Type your message here..."
                                         value={composeBody}
                                         onChange={(e) => setComposeBody(e.target.value)}

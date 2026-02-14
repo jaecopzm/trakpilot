@@ -92,6 +92,10 @@ export async function POST(req: NextRequest) {
             replyTo = (settings?.reply_to_email as string) || undefined;
         }
 
+        // Convert HTML to plain text for multipart
+        const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        const plainText = stripHtml(emailBody);
+
         // Wrap email body in a clean HTML template
         const finalHtml = `<!DOCTYPE html>
 <html>
@@ -99,11 +103,14 @@ export async function POST(req: NextRequest) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; margin: 0; padding: 20px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background: #f9f9f9; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; }
   </style>
 </head>
 <body>
-  ${emailBody}
+  <div class="container">
+    ${emailBody}
+  </div>
 </body>
 </html>`;
 
@@ -166,15 +173,20 @@ export async function POST(req: NextRequest) {
             finalBody = finalBody.replace('</body>', `<img src="${trackingUrl}" width="1" height="1" style="display:none" alt="" /></body>`);
         }
 
-        // 3. Add unsubscribe link (Pro or requested, for compliance)
-        const unsubLink = `https://mailtrackr.zedbeatz.com/api/unsubscribe?email=${encodeURIComponent(to)}&userId=${userId}`;
-        const unsubHtml = `<div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 11px; color: #999; text-align: center; font-family: sans-serif;">
-            You are receiving this because you were emailed by ${settings?.display_name || 'a user'}. 
-            <br/>
-            <a href="${unsubLink}" style="color: #111; text-decoration: underline;">Unsubscribe from these emails</a>
-        </div>`;
+        // 3. Add unsubscribe link and footer (for compliance & deliverability)
+        const origin = settings?.custom_domain
+            ? `https://${settings.custom_domain}`
+            : "https://mailtrackr.zedbeatz.com";
+        const unsubLink = `${origin}/api/unsubscribe?email=${encodeURIComponent(to)}&userId=${userId}`;
+        const unsubHtml = `
+  </div>
+  <div style="margin-top: 30px; padding: 20px; border-top: 1px solid #e5e5e5; font-size: 12px; color: #666; text-align: center; font-family: sans-serif;">
+    <p style="margin: 0 0 10px;">Sent by ${settings?.display_name || 'MailTrackr User'}</p>
+    <p style="margin: 0 0 10px;"><a href="${unsubLink}" style="color: #666; text-decoration: underline;">Unsubscribe</a> from these emails</p>
+    <p style="margin: 0; font-size: 11px; color: #999;">Powered by MailTrackr</p>
+  </div>`;
 
-        finalBody = finalBody.replace('</body>', `${unsubHtml}</body>`);
+        finalBody = finalBody.replace('</div>\n</body>', `${unsubHtml}\n</body>`);
 
         // If scheduled for later, we are done
         if (isScheduled) {
@@ -203,7 +215,13 @@ export async function POST(req: NextRequest) {
                 to,
                 subject: subject || '(No Subject)',
                 html: finalBody,
+                text: plainText,
                 ...(replyTo ? { replyTo } : {}),
+                headers: {
+                    'X-Entity-Ref-ID': trackingId || uuidv4(),
+                    'List-Unsubscribe': `<${unsubLink}>`,
+                    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                }
             });
 
             if (error) {
@@ -229,6 +247,12 @@ export async function POST(req: NextRequest) {
                 to,
                 subject: subject || '(No Subject)',
                 html: finalBody,
+                text: plainText,
+                headers: {
+                    'X-Entity-Ref-ID': trackingId || uuidv4(),
+                    'List-Unsubscribe': `<${unsubLink}>`,
+                    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                }
             };
             if (replyTo) mailOptions.replyTo = replyTo;
 

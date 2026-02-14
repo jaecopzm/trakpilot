@@ -12,7 +12,7 @@ export async function GET() {
 
     try {
         const result = await db.execute({
-            sql: 'SELECT * FROM email_templates WHERE user_id = ? ORDER BY created_at DESC',
+            sql: 'SELECT * FROM templates WHERE user_id = ? ORDER BY created_at DESC',
             args: [userId]
         });
         return NextResponse.json(result.rows);
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         if (id) {
             // Update existing
             await db.execute({
-                sql: `UPDATE email_templates SET name = ?, subject = ?, body = ? WHERE id = ? AND user_id = ?`,
+                sql: `UPDATE templates SET name = ?, subject = ?, body = ? WHERE id = ? AND user_id = ?`,
                 args: [name, subject || '', templateBody, id, userId]
             });
             return NextResponse.json({ id, name, subject, body: templateBody });
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
             // Create new
             const newId = uuidv4();
             await db.execute({
-                sql: `INSERT INTO email_templates (id, user_id, name, subject, body, created_at)
+                sql: `INSERT INTO templates (id, user_id, name, subject, body, created_at)
                       VALUES (?, ?, ?, ?, ?, ?)`,
                 args: [newId, userId, name, subject || '', templateBody, now]
             });
