@@ -16,7 +16,25 @@ export async function GET() {
             args: [userId]
         });
         return NextResponse.json(result.rows);
-    } catch (error) {
+    } catch (error: any) {
+        // Auto-create table if it doesn't exist
+        if (error?.message?.includes('no such table')) {
+            try {
+                await db.execute(`
+                    CREATE TABLE IF NOT EXISTS templates (
+                        id TEXT PRIMARY KEY,
+                        user_id TEXT NOT NULL,
+                        name TEXT NOT NULL,
+                        subject TEXT,
+                        body TEXT NOT NULL,
+                        created_at INTEGER NOT NULL
+                    )
+                `);
+                return NextResponse.json([]);
+            } catch (createError) {
+                console.error('Error creating templates table:', createError);
+            }
+        }
         console.error('Error fetching templates:', error);
         return NextResponse.json({ error: 'Failed to fetch templates' }, { status: 500 });
     }

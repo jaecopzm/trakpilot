@@ -154,7 +154,17 @@ export default function Dashboard() {
         try {
             const res = await fetch('/api/templates');
             const data = await res.json();
-            if (Array.isArray(data)) setTemplates(data);
+            if (Array.isArray(data)) {
+                setTemplates(data);
+                // If no templates, initialize defaults
+                if (data.length === 0) {
+                    await fetch('/api/templates/init', { method: 'POST' });
+                    // Refetch after initialization
+                    const res2 = await fetch('/api/templates');
+                    const data2 = await res2.json();
+                    if (Array.isArray(data2)) setTemplates(data2);
+                }
+            }
         } catch (error) { console.error('Failed to fetch templates', error); }
     };
 
