@@ -20,7 +20,7 @@ export async function GET(
         });
 
         if (linkResult.rows.length === 0) {
-            return NextResponse.redirect(new URL('/', req.nextUrl.origin));
+            return NextResponse.redirect(new URL('/', "https://mailtrackr.zedbeatz.com"));
         }
 
         const link = linkResult.rows[0];
