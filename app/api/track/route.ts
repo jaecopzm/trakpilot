@@ -69,8 +69,7 @@ export async function GET(req: NextRequest) {
                 args: [isProxy, Date.now(), heatIncrement, id]
             });
 
-            // 5. Send Slack Notification (if configured)
-            // First get the email details to know the user and context
+            // 5. Send real-time notification
             const emailResult = await db.execute({
                 sql: 'SELECT user_id, recipient, subject FROM emails WHERE id = ?',
                 args: [id]
@@ -79,7 +78,21 @@ export async function GET(req: NextRequest) {
             if (emailResult.rows.length > 0) {
                 const email = emailResult.rows[0];
 
-                // Get user settings
+                // Send SSE notification
+                try {
+                    const { sendNotification } = await import('@/app/api/notifications/stream/route');
+                    sendNotification(email.user_id as string, {
+                        type: 'email_opened',
+                        emailId: id,
+                        recipient: email.recipient,
+                        subject: email.subject,
+                        timestamp: Date.now()
+                    });
+                } catch (error) {
+                    console.error('Failed to send notification:', error);
+                }
+
+                // Get user settings for Slack
                 const settingsResult = await db.execute({
                     sql: 'SELECT slack_webhook_url FROM user_settings WHERE user_id = ?',
                     args: [email.user_id]

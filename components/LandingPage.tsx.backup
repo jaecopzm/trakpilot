@@ -1,0 +1,431 @@
+import React from 'react';
+import {
+    Mail, Eye, Zap, BarChart3, Shield, Bell, CheckCircle, ArrowRight, 
+    ShieldCheck, MousePointerClick, Globe, Clock, Sparkles, TrendingUp,
+    Brain, Target, Rocket
+} from 'lucide-react';
+import { SignInButton, SignUpButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import MarketingNav from '@/components/MarketingNav';
+import MarketingFooter from '@/components/MarketingFooter';
+
+const features = [
+    {
+        icon: Eye,
+        title: 'Real-Time Tracking',
+        description: 'Get instant browser notifications the moment your email is opened. No more guessing games.',
+    },
+    {
+        icon: Brain,
+        title: 'AI-Powered Optimization',
+        description: 'Let AI rewrite your emails for better deliverability and engagement. Fix spam triggers automatically.',
+    },
+    {
+        icon: TrendingUp,
+        title: 'Advanced Analytics',
+        description: 'Deep insights into open rates, click rates, best send times, and engagement patterns.',
+    },
+    {
+        icon: Target,
+        title: 'Lead Scoring',
+        description: 'Automatically identify hot leads based on email engagement. Focus on prospects that matter.',
+    },
+    {
+        icon: MousePointerClick,
+        title: 'Link Click Tracking',
+        description: 'Track every link click to understand what content resonates with your audience.',
+    },
+    {
+        icon: Rocket,
+        title: 'Email Sequences',
+        description: 'Automate follow-ups with smart email sequences. Set it and forget it.',
+    },
+];
+
+const pricingFeatures = {
+    free: [
+        '50 tracked emails/month',
+        'Open & click tracking',
+        'Basic analytics',
+        'Email sequences (1 active)',
+        'Email support',
+    ],
+    pro: [
+        'Unlimited email tracking',
+        'Real-time notifications',
+        'AI email optimization',
+        'Advanced analytics',
+        'Deliverability checker',
+        'Unlimited sequences',
+        'Remove branding',
+        'Priority support',
+    ],
+};
+
+export default function LandingPage() {
+    return (
+        <div className="min-h-screen flex flex-col">
+            <MarketingNav />
+
+            {/* Hero */}
+            <section className="relative flex-1 flex flex-col items-center justify-center text-center px-6 pt-32 pb-20 bg-gradient-to-b from-background to-muted/20">
+                <Badge variant="secondary" className="mb-6 text-xs font-medium px-4 py-1.5 gap-2">
+                    <Sparkles className="w-3 h-3" />
+                    AI-Powered Email Tracking
+                </Badge>
+
+                <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight max-w-5xl leading-[1.1] bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                    Know exactly when your emails are opened
+                </h1>
+
+                <p className="text-xl text-muted-foreground max-w-2xl mt-6 leading-relaxed">
+                    Track opens, clicks, and engagement in real-time. Get AI-powered insights to close more deals.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 mt-10">
+                    <SignedOut>
+                        <SignUpButton mode="modal">
+                            <Button size="lg" className="text-base px-8 h-12">
+                                Start Free Trial
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                        </SignUpButton>
+                        <Link href="/pricing">
+                            <Button variant="outline" size="lg" className="text-base px-8 h-12">
+                                View Pricing
+                            </Button>
+                        </Link>
+                    </SignedOut>
+                    <SignedIn>
+                        <Link href="/dashboard">
+                            <Button size="lg" className="text-base px-8 h-12">
+                                Go to Dashboard
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                        </Link>
+                    </SignedIn>
+                </div>
+
+                <p className="text-sm text-muted-foreground mt-6">
+                    No credit card required • 50 emails free forever
+                </p>
+
+                {/* Social Proof */}
+                <div className="mt-20 grid grid-cols-3 gap-8 max-w-2xl w-full">
+                    {[
+                        { label: 'Emails Tracked', value: '1M+' },
+                        { label: 'Active Users', value: '10k+' },
+                        { label: 'Avg Open Rate', value: '68%' },
+                    ].map((stat, i) => (
+                        <div key={i} className="text-center">
+                            <div className="text-4xl font-bold text-primary">{stat.value}</div>
+                            <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* Features */}
+            <section className="py-24 px-6 bg-muted/30">
+                <div className="max-w-6xl mx-auto">
+                    <div className="text-center mb-16">
+                        <Badge variant="outline" className="mb-4">Features</Badge>
+                        <h2 className="text-4xl font-bold mb-4">Everything you need to track emails</h2>
+                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                            Powerful features designed for sales professionals and marketers
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {features.map((feature, i) => (
+                            <Card key={i} className="border-border/50 hover:border-primary/50 transition-colors">
+                                <CardContent className="p-6">
+                                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                                        <feature.icon className="w-6 h-6 text-primary" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                                    <p className="text-muted-foreground text-sm leading-relaxed">
+                                        {feature.description}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Pricing */}
+            <section className="py-24 px-6">
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-16">
+                        <Badge variant="outline" className="mb-4">Pricing</Badge>
+                        <h2 className="text-4xl font-bold mb-4">Simple, transparent pricing</h2>
+                        <p className="text-xl text-muted-foreground">
+                            Start free, upgrade when you need more
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        {/* Free Plan */}
+                        <Card className="border-border/50">
+                            <CardContent className="p-8">
+                                <div className="mb-6">
+                                    <h3 className="text-2xl font-bold mb-2">Free</h3>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-4xl font-bold">$0</span>
+                                        <span className="text-muted-foreground">/month</span>
+                                    </div>
+                                </div>
+                                <ul className="space-y-3 mb-8">
+                                    {pricingFeatures.free.map((feature, i) => (
+                                        <li key={i} className="flex items-start gap-3">
+                                            <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                                            <span className="text-sm">{feature}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <SignedOut>
+                                    <SignUpButton mode="modal">
+                                        <Button variant="outline" className="w-full">
+                                            Get Started Free
+                                        </Button>
+                                    </SignUpButton>
+                                </SignedOut>
+                                <SignedIn>
+                                    <Link href="/dashboard">
+                                        <Button variant="outline" className="w-full">
+                                            Go to Dashboard
+                                        </Button>
+                                    </Link>
+                                </SignedIn>
+                            </CardContent>
+                        </Card>
+
+                        {/* Pro Plan */}
+                        <Card className="border-primary shadow-lg shadow-primary/20 relative">
+                            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                                <Badge className="px-4 py-1">Most Popular</Badge>
+                            </div>
+                            <CardContent className="p-8">
+                                <div className="mb-6">
+                                    <h3 className="text-2xl font-bold mb-2">Pro</h3>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-4xl font-bold">$8</span>
+                                        <span className="text-muted-foreground">/month</span>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground mt-1">$6/month billed yearly</p>
+                                </div>
+                                <ul className="space-y-3 mb-8">
+                                    {pricingFeatures.pro.map((feature, i) => (
+                                        <li key={i} className="flex items-start gap-3">
+                                            <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                                            <span className="text-sm">{feature}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <SignedOut>
+                                    <SignUpButton mode="modal">
+                                        <Button className="w-full">
+                                            Start Free Trial
+                                        </Button>
+                                    </SignUpButton>
+                                </SignedOut>
+                                <SignedIn>
+                                    <Link href="/pricing">
+                                        <Button className="w-full">
+                                            Upgrade to Pro
+                                        </Button>
+                                    </Link>
+                                </SignedIn>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </section>
+
+            {/* CTA */}
+            <section className="py-24 px-6 bg-primary text-primary-foreground">
+                <div className="max-w-4xl mx-auto text-center">
+                    <h2 className="text-4xl font-bold mb-4">
+                        Ready to track your emails?
+                    </h2>
+                    <p className="text-xl opacity-90 mb-8">
+                        Join thousands of sales professionals using MailTrackr
+                    </p>
+                    <SignedOut>
+                        <SignUpButton mode="modal">
+                            <Button size="lg" variant="secondary" className="text-base px-8 h-12">
+                                Start Free Trial
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                        </SignUpButton>
+                    </SignedOut>
+                    <SignedIn>
+                        <Link href="/dashboard">
+                            <Button size="lg" variant="secondary" className="text-base px-8 h-12">
+                                Go to Dashboard
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                        </Link>
+                    </SignedIn>
+                </div>
+            </section>
+
+            <MarketingFooter />
+        </div>
+    );
+}
+            <section id="features" className="py-24 px-6">
+                <div className="max-w-6xl mx-auto">
+                    <div className="text-center mb-16">
+                        <Badge variant="secondary" className="mb-4 text-xs">Features</Badge>
+                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                            Everything you need to track emails
+                        </h2>
+                        <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+                            Simple, powerful, and invisible. Built for sales professionals who need to know.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {features.map((feature, i) => (
+                            <Card key={i} className="bg-card/50 border-border/50 hover:border-primary/20 transition-all duration-300 hover:-translate-y-0.5">
+                                <CardHeader className="pb-3">
+                                    <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mb-3">
+                                        <feature.icon className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <CardTitle className="text-base">{feature.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <CardDescription className="leading-relaxed">
+                                        {feature.description}
+                                    </CardDescription>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Pricing */}
+            <section id="pricing" className="py-24 px-6 border-t border-border/50">
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-16">
+                        <Badge variant="secondary" className="mb-4 text-xs">Pricing</Badge>
+                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                            Simple, transparent pricing
+                        </h2>
+                        <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+                            Start free and upgrade when you&apos;re ready. No hidden fees, cancel anytime.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                        {/* Free Plan */}
+                        <Card className="bg-card/50 border-border/50">
+                            <CardHeader>
+                                <CardTitle className="text-xl">Free</CardTitle>
+                                <CardDescription>For getting started</CardDescription>
+                                <div className="pt-4">
+                                    <span className="text-4xl font-bold">$0</span>
+                                    <span className="text-muted-foreground ml-1">/month</span>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="space-y-3">
+                                    {freePlanFeatures.map((feature, i) => (
+                                        <li key={i} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                                            <CheckCircle className="w-4 h-4 text-muted-foreground/60 shrink-0" />
+                                            {feature}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </CardContent>
+                            <CardFooter>
+                                <SignedOut>
+                                    <SignUpButton mode="modal">
+                                        <Button variant="outline" className="w-full">
+                                            Get Started Free
+                                        </Button>
+                                    </SignUpButton>
+                                </SignedOut>
+                                <SignedIn>
+                                    <Link href="/dashboard" className="w-full">
+                                        <Button variant="outline" className="w-full">
+                                            Go to Dashboard
+                                        </Button>
+                                    </Link>
+                                </SignedIn>
+                            </CardFooter>
+                        </Card>
+
+                        {/* Pro Plan */}
+                        <Card className="border-primary/30 bg-card/50 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+                            <CardHeader>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-xl">Pro</CardTitle>
+                                    <Badge className="text-xs">Popular</Badge>
+                                </div>
+                                <CardDescription>For serious sales reps</CardDescription>
+                                <div className="pt-4">
+                                    <span className="text-4xl font-bold">$19</span>
+                                    <span className="text-muted-foreground ml-1">/month</span>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="space-y-3">
+                                    {proPlanFeatures.map((feature, i) => (
+                                        <li key={i} className="flex items-center gap-2.5 text-sm text-foreground/80">
+                                            <CheckCircle className="w-4 h-4 text-success shrink-0" />
+                                            {feature}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </CardContent>
+                            <CardFooter>
+                                <Button className="w-full">
+                                    Subscribe Now
+                                    <ArrowRight className="w-4 h-4 ml-2" />
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </div>
+                </div>
+            </section>
+
+            {/* CTA */}
+            <section className="py-24 px-6 bg-primary text-primary-foreground">
+                <div className="max-w-4xl mx-auto text-center">
+                    <h2 className="text-4xl font-bold mb-4">
+                        Ready to track your emails?
+                    </h2>
+                    <p className="text-xl opacity-90 mb-8">
+                        Join thousands of sales professionals using MailTrackr
+                    </p>
+                    <SignedOut>
+                        <SignUpButton mode="modal">
+                            <Button size="lg" variant="secondary" className="text-base px-8 h-12">
+                                Start Free Trial
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                        </SignUpButton>
+                    </SignedOut>
+                    <SignedIn>
+                        <Link href="/dashboard">
+                            <Button size="lg" variant="secondary" className="text-base px-8 h-12">
+                                Go to Dashboard
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                        </Link>
+                    </SignedIn>
+                </div>
+            </section>
+
+            <MarketingFooter />
+        </div>
+    );
+}

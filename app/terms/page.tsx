@@ -1,141 +1,155 @@
-import React from 'react';
-import { Metadata } from 'next';
 import MarketingNav from '@/components/MarketingNav';
 import MarketingFooter from '@/components/MarketingFooter';
 
-export const metadata: Metadata = {
-    title: 'Terms of Service — MailTrackr',
-    description: 'Read the terms and conditions for using the MailTrackr service.',
-};
-
 export default function TermsPage() {
-    return (
-        <div className="min-h-screen flex flex-col ambient-bg">
-            <MarketingNav />
+  return (
+    <div className="min-h-screen flex flex-col">
+      <MarketingNav />
+      <main className="flex-1 py-16 px-6">
+        <div className="max-w-4xl mx-auto prose prose-slate dark:prose-invert">
+          <h1>Terms of Service</h1>
+          <p className="text-muted-foreground">Last updated: February 16, 2026</p>
 
-            <main className="flex-1 py-24 px-6">
-                <article className="max-w-3xl mx-auto prose-invert">
-                    <p className="text-xs text-muted-foreground mb-2">Last updated: February 13, 2026</p>
-                    <h1 className="text-4xl font-bold tracking-tight mb-2">Terms of Service</h1>
-                    <p className="text-muted-foreground mb-12 text-lg">
-                        Please read these terms carefully before using MailTrackr.
-                    </p>
+          <h2>1. Agreement to Terms</h2>
+          <p>
+            By accessing or using MailTrackr ("Service"), you agree to be bound by these Terms of Service ("Terms"). 
+            If you disagree with any part of the terms, you may not access the Service.
+          </p>
 
-                    <section className="mb-10">
-                        <h2 className="text-xl font-semibold mb-3">1. Acceptance of Terms</h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            By accessing or using MailTrackr (&quot;the Service&quot;), you agree to be bound by these Terms of Service.
-                            If you do not agree to these terms, you may not use the Service. We reserve the right to
-                            update these terms at any time, and will notify you of material changes via email or an in-app notification.
-                        </p>
-                    </section>
+          <h2>2. Description of Service</h2>
+          <p>
+            MailTrackr provides email tracking and analytics services, including but not limited to:
+          </p>
+          <ul>
+            <li>Email open tracking</li>
+            <li>Link click tracking</li>
+            <li>Email analytics and reporting</li>
+            <li>AI-powered email optimization</li>
+            <li>Email sequence automation</li>
+          </ul>
 
-                    <section className="mb-10">
-                        <h2 className="text-xl font-semibold mb-3">2. Account Terms</h2>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1.5 ml-2">
-                            <li>You must be at least 18 years old to use this Service.</li>
-                            <li>You must provide accurate and complete registration information.</li>
-                            <li>You are responsible for maintaining the security of your account and password.</li>
-                            <li>You are responsible for all activity that occurs under your account.</li>
-                            <li>One person or legal entity may not maintain more than one free account.</li>
-                        </ul>
-                    </section>
+          <h2>3. User Accounts</h2>
+          <p>
+            When you create an account with us, you must provide accurate, complete, and current information. 
+            Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account.
+          </p>
+          <p>
+            You are responsible for safeguarding the password and for all activities that occur under your account. 
+            You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account.
+          </p>
 
-                    <section className="mb-10">
-                        <h2 className="text-xl font-semibold mb-3">3. Acceptable Use</h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                            You agree not to use MailTrackr for any unlawful purpose or in ways that could harm
-                            the Service or other users. Specifically, you must not:
-                        </p>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1.5 ml-2">
-                            <li>Use the Service to send spam or unsolicited bulk emails.</li>
-                            <li>Track emails without a legitimate business purpose.</li>
-                            <li>Attempt to gain unauthorized access to any part of the Service.</li>
-                            <li>Reverse engineer, decompile, or disassemble the Service.</li>
-                            <li>Use the Service to violate any applicable laws or regulations, including privacy laws like GDPR or CAN-SPAM.</li>
-                        </ul>
-                    </section>
+          <h2>4. Acceptable Use</h2>
+          <p>You agree not to use the Service to:</p>
+          <ul>
+            <li>Send spam or unsolicited commercial emails</li>
+            <li>Violate any applicable laws or regulations</li>
+            <li>Infringe upon the rights of others</li>
+            <li>Transmit malware, viruses, or harmful code</li>
+            <li>Attempt to gain unauthorized access to our systems</li>
+            <li>Use the Service for any illegal or unauthorized purpose</li>
+          </ul>
 
-                    <section className="mb-10">
-                        <h2 className="text-xl font-semibold mb-3">4. Pricing & Payment</h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            The Free plan is available at no charge with limited features. Paid plans are billed
-                            monthly or annually as specified at the time of purchase. Prices may change with 30 days&apos;
-                            notice. All fees are non-refundable, except as required by law or as explicitly stated in
-                            our refund policy (14-day money-back guarantee for annual plans).
-                        </p>
-                    </section>
+          <h2>5. Subscription Plans</h2>
+          <h3>5.1 Free Plan</h3>
+          <p>
+            The Free plan includes 50 tracked emails per month with basic features. 
+            We reserve the right to modify or discontinue the Free plan at any time.
+          </p>
 
-                    <section className="mb-10">
-                        <h2 className="text-xl font-semibold mb-3">5. Usage Limits</h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            Free accounts are limited to 10 tracked emails per month. If you exceed your
-                            plan&apos;s limits, we may restrict your ability to create new trackers until you
-                            upgrade or until the next billing cycle. We reserve the right to enforce fair usage
-                            policies on all plans.
-                        </p>
-                    </section>
+          <h3>5.2 Pro Plan</h3>
+          <p>
+            The Pro plan is a paid subscription service billed monthly or annually. 
+            Pricing is available on our pricing page and may be changed with 30 days notice.
+          </p>
 
-                    <section className="mb-10">
-                        <h2 className="text-xl font-semibold mb-3">6. Intellectual Property</h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            The Service and its original content, features, and functionality are owned by
-                            MailTrackr and are protected by international copyright, trademark, and other
-                            intellectual property laws. Your data remains yours — we claim no ownership over the
-                            content you create or track through the Service.
-                        </p>
-                    </section>
+          <h2>6. Payment Terms</h2>
+          <p>
+            Payments are processed through Paddle.com Market Limited ("Paddle"), our Merchant of Record. 
+            By subscribing to a paid plan, you agree to Paddle's terms and conditions.
+          </p>
+          <p>
+            Subscriptions automatically renew unless cancelled before the renewal date. 
+            You can cancel your subscription at any time from your account settings.
+          </p>
 
-                    <section className="mb-10">
-                        <h2 className="text-xl font-semibold mb-3">7. Cancellation & Termination</h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            You can cancel your account at any time from your dashboard settings. Upon cancellation,
-                            your data will be retained for 30 days and then permanently deleted. We may also
-                            terminate or suspend your account without notice if you violate these Terms.
-                        </p>
-                    </section>
+          <h2>7. Refund Policy</h2>
+          <p>
+            We offer a 14-day money-back guarantee for new Pro subscriptions. 
+            To request a refund, contact us at support@mailtrackr.zedbeatz.com within 14 days of your initial purchase.
+          </p>
+          <p>
+            Refunds are not available for:
+          </p>
+          <ul>
+            <li>Subscription renewals</li>
+            <li>Partial months of service</li>
+            <li>Accounts terminated for Terms violations</li>
+          </ul>
 
-                    <section className="mb-10">
-                        <h2 className="text-xl font-semibold mb-3">8. Limitation of Liability</h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            To the fullest extent permitted by law, MailTrackr shall not be liable for any
-                            indirect, incidental, special, consequential, or punitive damages, or any loss of
-                            profits or revenues, whether incurred directly or indirectly. Our total liability
-                            shall not exceed the amount you paid us in the 12 months prior to the claim.
-                        </p>
-                    </section>
+          <h2>8. Data Usage and Privacy</h2>
+          <p>
+            Your use of the Service is also governed by our Privacy Policy. 
+            By using the Service, you consent to the collection and use of information as described in our Privacy Policy.
+          </p>
 
-                    <section className="mb-10">
-                        <h2 className="text-xl font-semibold mb-3">9. Disclaimer of Warranties</h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            The Service is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind,
-                            either express or implied. We do not guarantee that the Service will be uninterrupted,
-                            secure, or error-free. Email tracking depends on the recipient&apos;s email client loading
-                            images, which is beyond our control.
-                        </p>
-                    </section>
+          <h2>9. Intellectual Property</h2>
+          <p>
+            The Service and its original content, features, and functionality are owned by MailTrackr and are protected by 
+            international copyright, trademark, patent, trade secret, and other intellectual property laws.
+          </p>
 
-                    <section className="mb-10">
-                        <h2 className="text-xl font-semibold mb-3">10. Governing Law</h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            These Terms shall be governed by and construed in accordance with the laws of the
-                            jurisdiction in which MailTrackr operates, without regard to its conflict of law provisions.
-                        </p>
-                    </section>
+          <h2>10. Limitation of Liability</h2>
+          <p>
+            In no event shall MailTrackr, nor its directors, employees, partners, agents, suppliers, or affiliates, 
+            be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, 
+            loss of profits, data, use, goodwill, or other intangible losses, resulting from:
+          </p>
+          <ul>
+            <li>Your access to or use of or inability to access or use the Service</li>
+            <li>Any conduct or content of any third party on the Service</li>
+            <li>Any content obtained from the Service</li>
+            <li>Unauthorized access, use or alteration of your transmissions or content</li>
+          </ul>
 
-                    <section className="mb-10">
-                        <h2 className="text-xl font-semibold mb-3">11. Contact Us</h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            If you have questions about these Terms, please contact us at{' '}
-                            <a href="mailto:legal@mailtrackr.io" className="text-primary hover:underline">
-                                legal@mailtrackr.io
-                            </a>.
-                        </p>
-                    </section>
-                </article>
-            </main>
+          <h2>11. Service Availability</h2>
+          <p>
+            We strive to provide 99.9% uptime but do not guarantee uninterrupted access to the Service. 
+            We may suspend or terminate the Service for maintenance, updates, or other reasons without prior notice.
+          </p>
 
-            <MarketingFooter />
+          <h2>12. Termination</h2>
+          <p>
+            We may terminate or suspend your account immediately, without prior notice or liability, 
+            for any reason whatsoever, including without limitation if you breach the Terms.
+          </p>
+          <p>
+            Upon termination, your right to use the Service will immediately cease. 
+            All provisions of the Terms which by their nature should survive termination shall survive termination.
+          </p>
+
+          <h2>13. Changes to Terms</h2>
+          <p>
+            We reserve the right to modify or replace these Terms at any time. 
+            If a revision is material, we will provide at least 30 days notice prior to any new terms taking effect.
+          </p>
+
+          <h2>14. Governing Law</h2>
+          <p>
+            These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which 
+            MailTrackr operates, without regard to its conflict of law provisions.
+          </p>
+
+          <h2>15. Contact Us</h2>
+          <p>
+            If you have any questions about these Terms, please contact us at:
+          </p>
+          <p>
+            Email: support@mailtrackr.zedbeatz.com<br />
+            Website: https://mailtrackr.zedbeatz.com
+          </p>
         </div>
-    );
+      </main>
+      <MarketingFooter />
+    </div>
+  );
 }

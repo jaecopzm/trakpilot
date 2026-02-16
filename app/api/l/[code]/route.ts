@@ -78,6 +78,22 @@ export async function GET(
 
                 if (emailResult.rows.length > 0) {
                     const email = emailResult.rows[0];
+                    
+                    // Send real-time notification
+                    try {
+                        const { sendNotification } = await import('@/app/api/notifications/stream/route');
+                        sendNotification(email.user_id as string, {
+                            type: 'link_clicked',
+                            emailId: emailId,
+                            recipient: email.recipient,
+                            subject: email.subject,
+                            linkUrl: originalUrl,
+                            timestamp: Date.now()
+                        });
+                    } catch (error) {
+                        console.error('Failed to send notification:', error);
+                    }
+                    
                     const settingsResult = await db.execute({
                         sql: 'SELECT slack_webhook_url FROM user_settings WHERE user_id = ?',
                         args: [email.user_id]

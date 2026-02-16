@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { db } from '@/lib/db';
+import { db, withRetry } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
+import { checkEmailLimit, incrementEmailCount, checkRateLimit } from '@/lib/email-limits';
 
 // Simple email validation
 function isValidEmail(email: string): boolean {
@@ -17,9 +18,35 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Check rate limit
+    const rateLimit = checkRateLimit(userId);
+    if (!rateLimit.allowed) {
+        return NextResponse.json(
+            { error: `Rate limit exceeded. Try again in ${rateLimit.retryAfter} seconds.`, code: 'RATE_LIMIT' },
+            { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfter) } }
+        );
+    }
+
     try {
-        const body = await req.json();
-        const { to, subject, body: emailBody, track, scheduled_at } = body;
+        const contentType = req.headers.get('content-type') || '';
+        let to, subject, emailBody, track, scheduled_at;
+
+        if (contentType.includes('multipart/form-data')) {
+            const formData = await req.formData();
+            to = formData.get('to') as string;
+            subject = formData.get('subject') as string;
+            emailBody = formData.get('body') as string;
+            track = formData.get('track') === 'true';
+            const scheduledFor = formData.get('scheduledFor') as string;
+            scheduled_at = scheduledFor ? new Date(scheduledFor).getTime() : undefined;
+        } else {
+            const body = await req.json();
+            to = body.to;
+            subject = body.subject;
+            emailBody = body.body;
+            track = body.track;
+            scheduled_at = body.scheduled_at;
+        }
 
         // Validate inputs
         if (!to || !emailBody) {
@@ -36,24 +63,58 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        // Check email limit
+        const limitCheck = await checkEmailLimit(userId);
+        if (!limitCheck.allowed) {
+            return NextResponse.json(
+                { 
+                    error: `Monthly email limit reached (${limitCheck.limit} emails). Upgrade to Pro for unlimited emails.`, 
+                    code: 'LIMIT_REACHED',
+                    limit: limitCheck.limit,
+                    remaining: 0
+                },
+                { status: 403 }
+            );
+        }
+
         const isScheduled = scheduled_at && scheduled_at > Date.now();
 
-        // Get user's full settings (identity + SMTP + Pro features)
-        const settingsResult = await db.execute({
+        // Get user's full settings (identity + SMTP + Pro features) with retry
+        const settingsResult = await withRetry(() => db.execute({
             sql: `SELECT display_name, reply_to_email,
                          smtp_host, smtp_port, smtp_user, smtp_pass, from_email,
                          custom_domain, is_premium
                   FROM user_settings WHERE user_id = ?`,
             args: [userId]
+        }));
+
+        console.log('🔍 Looking for settings with userId:', userId);
+        console.log('🔍 Query returned rows:', settingsResult.rows.length);
+
+        let settings = settingsResult.rows.length > 0 ? settingsResult.rows[0] : null;
+
+        // Auto-create settings if they don't exist
+        if (!settings) {
+            console.log('⚠️ No settings found, creating default settings...');
+            await db.execute({
+                sql: `INSERT INTO user_settings (user_id, display_name, reply_to_email, emails_sent_this_month, last_reset_date) VALUES (?, ?, ?, 0, ?)`,
+                args: [userId, '', '', Date.now()]
+            });
+            settings = { display_name: '', reply_to_email: '', is_premium: 0 } as any;
+        }
+
+        console.log('📧 Email Settings:', {
+            hasSettings: !!settings,
+            displayName: settings?.display_name,
+            replyTo: settings?.reply_to_email,
+            hasCustomSMTP: !!settings?.smtp_host
         });
 
-        const settings = settingsResult.rows.length > 0 ? settingsResult.rows[0] : null;
-
-        // 1. Check for unsubscribes
-        const unsubscribeResult = await db.execute({
+        // 1. Check for unsubscribes with retry
+        const unsubscribeResult = await withRetry(() => db.execute({
             sql: `SELECT id FROM unsubscribes WHERE user_id = ? AND email = ?`,
             args: [userId, to]
-        });
+        }));
 
         if (unsubscribeResult.rows.length > 0) {
             return NextResponse.json(
@@ -87,9 +148,11 @@ export async function POST(req: NextRequest) {
             const displayName = (settings?.display_name as string) || 'MailTrackr User';
             const baseFrom = process.env.SMTP_FROM || 'noreply@mailtrackr.zedbeatz.com';
 
-            // Format: "John Doe via MailTrackr" <noreply@domain.com>
-            fromEmail = `"${displayName} via MailTrackr" <${baseFrom}>`;
+            // Use clean sender name without "via MailTrackr" branding
+            fromEmail = displayName ? `"${displayName}" <${baseFrom}>` : baseFrom;
             replyTo = (settings?.reply_to_email as string) || undefined;
+
+            console.log('📨 Using Resend with:', { fromEmail, replyTo });
         }
 
         // Convert HTML to plain text for multipart
@@ -98,13 +161,17 @@ export async function POST(req: NextRequest) {
 
         // Wrap email body in a clean HTML template
         const finalHtml = `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>${subject || 'Email'}</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background: #f9f9f9; }
-    .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    a { color: #0066cc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -178,15 +245,33 @@ export async function POST(req: NextRequest) {
             ? `https://${settings.custom_domain}`
             : "https://mailtrackr.zedbeatz.com";
         const unsubLink = `${origin}/api/unsubscribe?email=${encodeURIComponent(to)}&userId=${userId}`;
+        
+        // Only show branding if not premium
+        const brandingHtml = settings?.is_premium ? '' : `
+  <p style="margin: 10px 0 0; font-size: 11px; color: #999;">
+    <a href="https://mailtrackr.zedbeatz.com" style="color: #999; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+        <polyline points="22,6 12,13 2,6"></polyline>
+      </svg>
+      Sent with MailTrackr
+    </a>
+  </p>`;
+        
         const unsubHtml = `
-  </div>
-  <div style="margin-top: 30px; padding: 20px; border-top: 1px solid #e5e5e5; font-size: 12px; color: #666; text-align: center; font-family: sans-serif;">
-    <p style="margin: 0 0 10px;">Sent by ${settings?.display_name || 'MailTrackr User'}</p>
-    <p style="margin: 0 0 10px;"><a href="${unsubLink}" style="color: #666; text-decoration: underline;">Unsubscribe</a> from these emails</p>
-    <p style="margin: 0; font-size: 11px; color: #999;">Powered by MailTrackr</p>
-  </div>`;
+<div style="margin-top: 30px; padding: 20px; border-top: 1px solid #e5e5e5; font-size: 12px; color: #666; text-align: center; font-family: sans-serif;">
+  <p style="margin: 0 0 10px;">Sent by ${settings?.display_name || 'MailTrackr User'}</p>
+  <p style="margin: 0 0 10px;"><a href="${unsubLink}" style="color: #666; text-decoration: underline;">Unsubscribe</a> from these emails</p>${brandingHtml}
+</div>`;
 
-        finalBody = finalBody.replace('</div>\n</body>', `${unsubHtml}\n</body>`);
+        // Insert before closing container div or body tag
+        if (finalBody.includes('</div>\n</body>')) {
+            finalBody = finalBody.replace('</div>\n</body>', `${unsubHtml}\n</div>\n</body>`);
+        } else if (finalBody.includes('</body>')) {
+            finalBody = finalBody.replace('</body>', `${unsubHtml}\n</body>`);
+        } else {
+            finalBody += unsubHtml;
+        }
 
         // If scheduled for later, we are done
         if (isScheduled) {
@@ -221,7 +306,14 @@ export async function POST(req: NextRequest) {
                     'X-Entity-Ref-ID': trackingId || uuidv4(),
                     'List-Unsubscribe': `<${unsubLink}>`,
                     'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-                }
+                    'X-Priority': '3',
+                    'Importance': 'Normal',
+                    'X-Mailer': 'MailTrackr',
+                    'Precedence': 'bulk',
+                },
+                tags: [
+                    { name: 'category', value: 'transactional' }
+                ]
             });
 
             if (error) {
@@ -259,10 +351,14 @@ export async function POST(req: NextRequest) {
             await transporter.sendMail(mailOptions);
         }
 
+        // Increment email count after successful send
+        await incrementEmailCount(userId);
+
         return NextResponse.json({
             success: true,
             trackingId,
-            message: 'Email sent successfully'
+            message: 'Email sent successfully',
+            remaining: limitCheck.remaining - 1
         });
     } catch (error: unknown) {
         console.error('Error sending email:', error);

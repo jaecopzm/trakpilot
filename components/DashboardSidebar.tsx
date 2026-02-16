@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Mail, LayoutDashboard, BarChart3, Settings, CreditCard, ChevronLeft, ChevronRight, LogOut, Sparkles, Menu, X } from 'lucide-react';
+import { Mail, LayoutDashboard, BarChart3, Settings, CreditCard, ChevronLeft, ChevronRight, LogOut, Sparkles, Menu, X, ListChecks } from 'lucide-react';
 import { UserButton, useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -33,6 +33,12 @@ const navItems: NavItem[] = [
         icon: BarChart3,
     },
     {
+        label: 'Sequences',
+        href: '/dashboard/sequences',
+        icon: ListChecks,
+        badge: 'New',
+    },
+    {
         label: 'Settings',
         href: '/dashboard/settings',
         icon: Settings,
@@ -46,6 +52,7 @@ export default function DashboardSidebar() {
     const { user } = useUser();
 
     const toggleMobile = () => setMobileOpen(!mobileOpen);
+
     return (
         <TooltipProvider delayDuration={0}>
             {/* Mobile Trigger */}
@@ -90,26 +97,28 @@ export default function DashboardSidebar() {
                 <nav className="flex-1 px-3 py-4 space-y-1">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href;
+                        // Determine if item is active (exact match or sub-path for some)
+                        const isItemActive = isActive || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+
                         const linkContent = (
                             <Link
                                 key={item.href}
-                                href={item.badge ? '#' : item.href}
+                                href={item.href}
                                 onClick={() => setMobileOpen(false)}
                                 className={`
                                     flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium
                                     transition-all duration-200 group relative
-                                    ${isActive
+                                    ${isItemActive
                                         ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
                                         : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
                                     }
-                                    ${item.badge ? 'opacity-50 cursor-not-allowed' : ''}
                                     ${collapsed ? 'justify-center px-2' : ''}
                                 `}
                             >
-                                {isActive && (
+                                {isItemActive && (
                                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-sidebar-primary rounded-r-full" />
                                 )}
-                                <item.icon className={`w-[18px] h-[18px] shrink-0 ${isActive ? 'text-sidebar-primary' : ''}`} />
+                                <item.icon className={`w-[18px] h-[18px] shrink-0 ${isItemActive ? 'text-sidebar-primary' : ''}`} />
                                 {!collapsed && (
                                     <>
                                         <span className="flex-1">{item.label}</span>

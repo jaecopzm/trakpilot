@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import {
     Plus, Copy, RefreshCw, ExternalLink, Trash2, Mail, Eye, TrendingUp, BarChart3, Check, Image, Code,
     MonitorSmartphone, Settings, MapPin, Monitor, Clock, List, Send, Sparkles, Link as LinkIcon,
-    Bold, Italic, MousePointerClick, Save, MousePointer, Activity, ChevronRight, X, LineChart
+    Bold, Italic, MousePointerClick, Save, MousePointer, Activity, ChevronRight, X, LineChart, Bell
 } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/Toaster';
+import { useNotifications, requestNotificationPermission } from '@/hooks/useNotifications';
 import {
     Table,
     TableBody,
@@ -79,9 +80,15 @@ interface Template {
 export default function Dashboard() {
     const { user } = useUser();
     const { toast } = useToast();
+    const { connected } = useNotifications();
     const [emails, setEmails] = useState<Email[]>([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
+
+    // Request notification permission on mount
+    useEffect(() => {
+        requestNotificationPermission();
+    }, []);
 
     // New Email Form State
     const [recipient, setRecipient] = useState('');
@@ -141,6 +148,44 @@ export default function Dashboard() {
             // Move cursor to end of inserted tag
             // simplistic for now
         }, 0);
+    };
+
+    // AI Writing State
+    const [showAiModal, setShowAiModal] = useState(false);
+    const [aiPrompt, setAiPrompt] = useState('');
+    const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+
+    const handleAiGenerate = async () => {
+        if (!aiPrompt) return;
+        setIsGeneratingAi(true);
+        try {
+            const res = await fetch('/api/ai/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: aiPrompt,
+                    context: {
+                        subject: composeSubject,
+                        recipient: composeTo
+                    }
+                }),
+            });
+            const data = await res.json();
+
+            if (res.ok && data.text) {
+                setComposeBody(prev => prev + (prev ? '\n\n' : '') + data.text);
+                setShowAiModal(false);
+                setAiPrompt('');
+                toast('AI content generated!', 'success');
+            } else {
+                toast(data.error || 'Failed to generate content', 'error');
+            }
+        } catch (error) {
+            console.error('AI Error:', error);
+            toast('Failed to generate content', 'error');
+        } finally {
+            setIsGeneratingAi(false);
+        }
     };
 
 
@@ -1099,6 +1144,9 @@ export default function Dashboard() {
                                         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => insertTag('i')} title="Italic">
                                             <Italic className="w-3.5 h-3.5" />
                                         </Button>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50" onClick={() => setShowAiModal(true)} title="AI Write">
+                                            <Sparkles className="w-3.5 h-3.5" />
+                                        </Button>
                                         <Popover open={showLinkInput} onOpenChange={setShowLinkInput}>
                                             <PopoverTrigger asChild>
                                                 <Button variant="ghost" size="icon" className="h-6 w-6" title="Insert Link">
@@ -1224,7 +1272,50 @@ export default function Dashboard() {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                {/* AI Input Dialog */}
+                <Dialog open={showAiModal} onOpenChange={setShowAiModal}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Sparkles className="w-5 h-5 text-indigo-500" />
+                                AI Writing Assistant
+                            </DialogTitle>
+                            <DialogDescription>
+                                Describe what you want to say, and I'll draft it for you.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-2">
+                            <textarea
+                                className="w-full h-32 bg-secondary/50 rounded-md p-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+                                placeholder="E.g., Write a polite follow-up asking if they saw my last email about the Q4 proposal..."
+                                value={aiPrompt}
+                                onChange={(e) => setAiPrompt(e.target.value)}
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button variant="ghost" onClick={() => setShowAiModal(false)}>Cancel</Button>
+                            <Button
+                                onClick={handleAiGenerate}
+                                disabled={!aiPrompt || isGeneratingAi}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+                            >
+                                {isGeneratingAi ? (
+                                    <>
+                                        <RefreshCw className="w-4 h-4 animate-spin" />
+                                        Writing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="w-4 h-4" />
+                                        Generate Draft
+                                    </>
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </main>
-        </div>
+        </div >
     );
 }
