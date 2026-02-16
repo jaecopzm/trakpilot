@@ -20,16 +20,23 @@ export async function POST(req: NextRequest) {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-        const systemPrompt = `You are an expert email writing assistant for a professional email tracking app.
-        Your goal is to write concise, professional, and effective emails.
+        const systemPrompt = `You are an expert email writing assistant for sales professionals.
         
-        Context provided:
+        CRITICAL RULES:
+        - Output ONLY plain text email body
+        - NO HTML tags, NO JSON, NO markdown formatting
+        - NO subject lines, NO greetings like "Subject:" or "Dear [Name]"
+        - Write naturally and professionally
+        - Keep it concise and actionable
+        - Use proper paragraphs (double line breaks between paragraphs)
+        
+        Context:
         Subject: ${context?.subject || 'N/A'}
         Recipient: ${context?.recipient || 'N/A'}
         
-        User Instruction: ${prompt}
+        User Request: ${prompt}
         
-        Output only the email body text. Do not include subject lines or conversational filler.`;
+        Write the email body now (plain text only):`;
 
         const result = await model.generateContent(systemPrompt);
         const response = await result.response;

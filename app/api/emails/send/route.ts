@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
 import { checkEmailLimit, incrementEmailCount, checkRateLimit } from '@/lib/email-limits';
+import { wrapEmailContentProfessional } from '@/lib/email-templates';
 
 // Simple email validation
 function isValidEmail(email: string): boolean {
@@ -159,29 +160,14 @@ export async function POST(req: NextRequest) {
         const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
         const plainText = stripHtml(emailBody);
 
-        // Wrap email body in a clean HTML template
-        const finalHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="x-apple-disable-message-reformatting">
-  <title>${subject || 'Email'}</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background: #f5f5f5; }
-    .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    a { color: #0066cc; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    ${emailBody}
-  </div>
-</body>
-</html>`;
+        // Check if body is plain text or HTML
+        const isPlainText = !emailBody.includes('<') && !emailBody.includes('>');
+        
+        // Wrap in premium template if plain text, otherwise use as-is
+        let finalBody = isPlainText 
+            ? wrapEmailContentProfessional(emailBody, subject || '', '#667eea')
+            : emailBody;
 
-        let finalBody = finalHtml;
         let trackingId = null;
 
         // Helper for short codes
